@@ -1,0 +1,409 @@
+:root {
+    --bg-primary: #121212;
+    --bg-secondary: #1e1e1e;
+    --text-primary: #f5f5f5;
+    --text-secondary: #cfcfcf;
+    --accent-primary: #00bcd4;
+    --accent-hover: #4dd0e1;
+    --border-color: #333;
+    --code-bg: #2b2b2b;
+    --error-bg: #442222;
+    --error-text: #ff9999;
+    --success-bg: #224422;
+    --success-text: #99ff99;
+    --scrollbar-bg: #1e1e1e;
+    --scrollbar-thumb: #333;
+    --scrollbar-thumb-hover: #444;
+}
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+/* Estilos para la selección de texto - Navegadores WebKit */
+::selection {
+    background-color: #ffabd577; /* Rosa chicle */
+    color: white; /* Color del texto cuando está seleccionado */
+}
+
+/* Estilos para Firefox */
+::-moz-selection {
+    background-color: #ffabd577;
+    color: white;
+}
+body {
+    font-family: 'Inter', Arial, sans-serif;
+    display: flex;
+    height: 100vh;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    padding: 10px;
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+#toggleSidebar {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    z-index: 1000;
+    padding: 10px 15px;
+    font-size: 18px;
+    color: var(--text-primary);
+    background-color: #1e1e1e0e;
+    border:none;
+    /*border: 1px solid var(--border-color);*/
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+    
+}
+
+#toggleSidebar:hover {
+    background-color: var(--accent-primary);
+    color: white;
+}
+
+#sidebar.hidden {
+    margin-left: -450px; 
+}
+
+
+#sidebar {
+    overflow-y: auto;
+    width: 450px;
+    margin-left: 0;
+    background-color: var(--bg-secondary);
+    border-right: 1px solid var(--border-color);
+    padding: 20px;
+    position: fixed;
+    height: calc(100vh - 20px);
+    transition: margin-left 0.3s ease;
+    padding-top: 60px;
+    /* Estilos para Firefox */
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-bg);
+}
+
+/* Estilos para navegadores WebKit (Chrome, Safari, Edge) */
+#sidebar::-webkit-scrollbar {
+    width: 8px;
+}
+
+#sidebar::-webkit-scrollbar-track {
+    background: var(--scrollbar-bg);
+    border-radius: 4px;
+}
+
+#sidebar::-webkit-scrollbar-thumb {
+    background-color: var(--scrollbar-thumb);
+    border-radius: 4px;
+    border: 2px solid var(--scrollbar-bg);
+}
+
+#sidebar::-webkit-scrollbar-thumb:hover {
+    background-color: var(--scrollbar-thumb-hover);
+}
+
+#content {
+    flex-grow: 1;
+    margin-left: 470px;
+    padding: 20px;
+    flex-grow: 1;
+    overflow-y: auto;
+    max-width: calc(100% - 470px);
+    background-color: var(--bg-primary);
+    transition: margin-left 0.3s ease;
+    /* Estilos para Firefox */
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-bg);
+}
+
+/* Estilos para navegadores WebKit (Chrome, Safari, Edge) */
+#content::-webkit-scrollbar {
+    width: 8px;
+}
+
+#content::-webkit-scrollbar-track {
+    background: var(--scrollbar-bg);
+    border-radius: 4px;
+}
+
+#content::-webkit-scrollbar-thumb {
+    background-color: var(--scrollbar-thumb);
+    border-radius: 4px;
+    border: 2px solid var(--scrollbar-bg);
+}
+
+#content::-webkit-scrollbar-thumb:hover {
+    background-color: var(--scrollbar-thumb-hover);
+}
+
+.md-title {
+    padding: 10px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    word-break: break-word;
+    color: var(--text-primary);
+}
+
+.md-title:hover {
+    background-color: var(--border-color);
+}
+
+.md-title.active {
+    background-color: var(--accent-primary);
+    color: white;
+}
+
+#selectDir {
+    padding: 10px;
+    background-color: var(--accent-primary);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-bottom: 10px;
+    transition: background-color 0.3s ease;
+}
+
+#selectDir:hover {
+    background-color: var(--accent-hover);
+}
+
+#content.sidebar-collapsed {
+    margin-left: 0;
+    max-width: 100%;
+}
+
+#search {
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    font-size: 0.9em;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+#search:focus {
+    border-color: var(--accent-primary);
+}
+
+.loading {
+    padding: 20px;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.error {
+    padding: 20px;
+    color: var(--error-text);
+    background-color: var(--error-bg);
+    border: 1px solid var(--error-text);
+    border-radius: 4px;
+    margin: 10px;
+}
+
+.directory-info {
+    font-size: 0.8em;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+    word-break: break-word;
+}
+
+/* Markdown styles */
+#content h1, #content h2, #content h3, #content h4 {
+    color: var(--accent-primary);
+    margin: 1em 0 0.5em;
+}
+
+#content h1 {
+    font-size: 2.5em;
+    border-bottom: 2px solid var(--accent-primary);
+}
+
+#content h2 {
+    font-size: 2em;
+}
+
+#content h3 {
+    font-size: 1.75em;
+}
+
+#content h4 {
+    font-size: 1.5em;
+}
+
+#content p {
+    margin-bottom: 1.2em;
+    color: var(--text-primary);
+}
+
+#content ul, #content ol {
+    margin: 1em 0;
+    padding-left: 2em;
+    color: var(--text-primary);
+}
+
+#content li {
+    margin-bottom: 0.5em;
+}
+
+#content a {
+    color: var(--accent-primary);
+    text-decoration: none;
+}
+
+#content a:hover {
+    text-decoration: underline;
+}
+
+#content blockquote {
+    border-left: 4px solid var(--accent-primary);
+    margin: 1em 0;
+    padding: 0.5em 1em;
+    background-color: var(--bg-secondary);
+    font-style: italic;
+    opacity: 0.9;
+}
+
+#content code:not([class*="language-"]) {
+    background-color: var(--code-bg);
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 0.9em;
+    color: #ff99cc;
+}
+
+#content pre {
+    margin: 1.5em 0;
+    padding: 1em;
+    border-radius: 5px;
+    background-color: var(--code-bg);
+    overflow-x: auto;
+}
+
+#content pre code {
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 0.9em;
+    line-height: 1.5;
+}
+
+.tree-item {
+    padding: 8px 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: background-color 0.2s;
+    font-size: 14px;
+}
+
+.tree-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.tree-item.active {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.children {
+    margin-left: 20px;
+    display: none;
+    padding-left: 10px;
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.folder-icon, .file-icon, .podcast-icon {
+    margin-right: 8px;
+    font-size: 16px;
+}
+
+#content table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1em 0;
+}
+
+#content th, #content td {
+    border: 1px solid var(--border-color);
+    padding: 8px;
+    text-align: left;
+}
+
+#content th {
+    background-color: var(--bg-secondary);
+    color: var(--accent-primary);
+}
+
+#content tr:nth-child(even) {
+    background-color: var(--bg-secondary);
+}
+
+/* Audio player styles */
+#audio-player-container {
+    padding: 10px;
+    background-color: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+    position: sticky;
+    bottom: 0;
+    z-index: 100;
+}
+
+#audio-player {
+    width: 100%;
+}
+
+.sidebar-audio-player {
+    width: 100%;
+    max-width: 450px;
+    margin: 0 auto;
+    display: block;
+}
+
+#audio-title {
+    color: var(--accent-primary);
+    font-size: 0.9em;
+    margin-bottom: 5px;
+    word-break: break-word;
+}
+
+/* Responsive Design */
+@media (max-width: 750px) {
+    #sidebar {
+        position: relative;
+        width: 100%;
+        margin-bottom: 10px;
+        height: auto;
+    }
+
+    #content {
+        margin-left: 0;
+        max-width: 100%;
+    }
+
+    .tree-item {
+        font-size: 16px;
+    }
+
+    .folder-icon, .file-icon, .podcast-icon {
+        font-size: 18px;
+    }
+
+    #audio-player-container {
+        padding: 10px;
+    }
+
+    ::-webkit-scrollbar {
+        display: none;
+    }
+
+    body {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+}
