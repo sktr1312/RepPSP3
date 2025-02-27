@@ -36,7 +36,6 @@ public class App {
             {
                 "nombre": "%s",
                 "apellidos": "%s",
-                "telefonos : [],
                 "codProvincia": %s,
                 "vip": %s
             }

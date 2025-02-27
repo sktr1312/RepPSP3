@@ -52,12 +52,12 @@ class Router
                 // Eliminar el match completo
                 array_shift($matches);
 
-                // Filtrar solo los parámetros nombrados
-                $params = array_filter($matches, 'is_string', ARRAY_FILTER_USE_KEY);
+                  $params = array_filter($matches, 'is_string', ARRAY_FILTER_USE_KEY);
 
                 try {
                     call_user_func_array($handler, $params);
-                } catch (Exception $e) {
+                } catch (Exception $e) {   // Filtrar solo los parámetros nombrados
+           
                     http_response_code(500);
                     echo json_encode(["error" => "Error interno del servidor"]);
                 }
