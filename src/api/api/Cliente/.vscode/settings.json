@@ -1,0 +1,14 @@
+{
+    "java.project.sourcePaths": ["src"],
+    "java.project.outputPath": "bin",
+    "java.project.referencedLibraries": {
+        "include": [
+            "lib/**/*.jar",
+            "/Users/borjaoteroferreira/Downloads/gson-2.8.0.jar"
+        ],
+        "exclude": [
+            "lib/gson-2.10.1-javadoc.jar"
+        ]
+    }
+    
+}

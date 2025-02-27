@@ -1,0 +1,7 @@
+{
+    "java.project.referencedLibraries": [
+        "lib/**/*.jar",
+        "ClienteJava/gson-2.10.1-javadoc.jar",
+        "d:\\Downloads\\gson-2.10.1.jar"
+    ]
+}
