@@ -12,7 +12,7 @@ public class ServidorChatSocket extends Thread {
     private static final long serialVersionUID = 1L;
     private static final int PORT = 1234;
     private ServerSocket servidor;
-    private Map<String, Cliente> clientes;
+    private Map<String, ClienteConection> clientes;
 
     public ServidorChatSocket() {
         clientes = new HashMap<>();
@@ -36,7 +36,7 @@ public class ServidorChatSocket extends Thread {
         }
     }
 
-    public Map<String, Cliente> getClientes() {
+    public Map<String, ClienteConection> getClientes() {
         return clientes;
     }
 }

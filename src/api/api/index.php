@@ -16,6 +16,7 @@ $router->post('/clientes', ['ClienteController', 'createCliente']);
 $router->get('/clientes/{id}', ['ClienteController', 'getCliente']);
 $router->put('/clientes/{id}', ['ClienteController', 'updateCliente']);
 $router->delete('/clientes/{id}', ['ClienteController', 'deleteCliente']);
+$router->get('/clientes/provincias/{id}', ['ClienteController', 'getCliente']);
 
 //provincias 
 $router->get('/provincias', ['ProvinciaController', 'getAll']);
@@ -30,6 +31,3 @@ $router->delete('/provincias/{id}', ['ProvinciaController', 'deleteProvincia']);
 $router->run();
 
 ?>
-
-
-

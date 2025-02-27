@@ -31,13 +31,29 @@ public class ClienteConection extends Thread {
 
             } else {
                 clienteModelo = new Cliente(nombreUsuario, cliente);
-                servidorChatSocket.getClientes().put(nombreUsuario, clienteModelo);
+                servidorChatSocket.getClientes().put(nombreUsuario, this);
                 salida.writeUTF("Bienvenido " + nombreUsuario);
+                while (true) {
+                    String nombreUsuarioDestino = entrada.readUTF();
+                    if (nombreUsuarioDestino.equals("salir")) {
+                        servidorChatSocket.getClientes().remove(nombreUsuarioDestino);
+                        cliente.close();
+                        break;
+                    } else if (servidorChatSocket.getClientes().containsKey(nombreUsuarioDestino)) {
+                        ClienteConection clienteDestino = servidorChatSocket.getClientes().get(nombreUsuarioDestino);
+                        clienteDestino.getSalida().writeUTF(nombreUsuarioDestino + " te ha enviado un mensaje: " + entrada.readUTF());
+                        
+                    }
+                }
             }
 
-            cliente.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
+    public DataOutputStream getSalida() {
+        return salida;
+    }
+
 }

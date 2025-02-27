@@ -1,22 +1,28 @@
 <?php
-class Router {
+class Router
+{
     private $routes = [];
-    public function get($path, $handler) {
+    public function get($path, $handler)
+    {
         $this->routes['GET'][$path] = $handler;
     }
 
-    public function post($path, $handler) {
+    public function post($path, $handler)
+    {
         $this->routes['POST'][$path] = $handler;
     }
 
-    public function put($path, $handler) {
+    public function put($path, $handler)
+    {
         $this->routes['PUT'][$path] = $handler;
     }
 
-    public function delete($path, $handler) {
+    public function delete($path, $handler)
+    {
         $this->routes['DELETE'][$path] = $handler;
     }
-    public function run() {
+    public function run()
+    {
         $method = $_SERVER['REQUEST_METHOD'];
         $uri = $_SERVER['REQUEST_URI'];
         $uri = str_replace('/api/index.php', '', $uri);
@@ -36,15 +42,31 @@ class Router {
             return;
         }
         foreach ($this->routes[$method] as $route => $handler) {
+            // Convertir la ruta en un patrón regex que soporte múltiples segmentos
             $pattern = preg_replace('/\{(\w+)\}/', '(?P<$1>[^/]+)', $route);
-            if (preg_match("#^$pattern$#", $uri, $matches)) {
+
+            // Asegurar que los segmentos literales se comparen exactamente
+            $pattern = str_replace('/', '\/', $pattern);
+
+            if (preg_match("/^$pattern$/", $uri, $matches)) {
+                // Eliminar el match completo
                 array_shift($matches);
-                call_user_func_array($handler, array_filter($matches, 'is_string', ARRAY_FILTER_USE_KEY));
+
+                // Filtrar solo los parámetros nombrados
+                $params = array_filter($matches, 'is_string', ARRAY_FILTER_USE_KEY);
+
+                try {
+                    call_user_func_array($handler, $params);
+                } catch (Exception $e) {
+                    http_response_code(500);
+                    echo json_encode(["error" => "Error interno del servidor"]);
+                }
                 return;
             }
         }
         http_response_code(404);
         echo json_encode(["error" => "Ruta no encontrada"]);
-    }}
+    }
+}
 
 ?>
