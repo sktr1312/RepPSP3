@@ -21,8 +21,7 @@ class Router
     {
         $this->routes['DELETE'][$path] = $handler;
     }
-    public function run()
-    {
+    public function run(){
         $method = $_SERVER['REQUEST_METHOD'];
         $uri = $_SERVER['REQUEST_URI'];
         $uri = str_replace('/api/index.php', '', $uri);
