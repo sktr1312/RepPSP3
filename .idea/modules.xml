@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/RepPSP.iml" filepath="$PROJECT_DIR$/RepPSP.iml" />
+      <module fileurl="file://$PROJECT_DIR$/src/RepPSP2.iml" filepath="$PROJECT_DIR$/src/RepPSP2.iml" />
+    </modules>
+  </component>
+</project>
