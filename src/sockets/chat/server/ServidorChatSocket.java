@@ -1,48 +1,42 @@
 package sockets.chat.server;
 
-public class ServidorChatSocket {
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-    public void iniciar() {
-        System.out.println("Servidor de chat iniciado");
+public class ServidorChatSocket extends Thread {
+    private static final long serialVersionUID = 1L;
+    private static final int PORT = 1234;
+    private ServerSocket servidor;
+    private Map<String, Cliente> clientes;
+
+    public ServidorChatSocket() {
+        clientes = new HashMap<>();
     }
 
-    public void enviarMensagem(String mensagem) {
-        System.out.println("Mensagem enviada: " + mensagem);
+    @Override
+    public void run() {
+        super.run();
+        try {
+            servidor = new ServerSocket(PORT);
+            System.out.println("Servidor iniciado...");
+            while (true) {
+                Socket socket = servidor.accept();
+                System.out.println("Cliente conectado...");
+                ClienteConection hilo = new ClienteConection(this, socket);
+                hilo.start();
+
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(ServidorChatSocket.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
-    public void encerrar() {
-        System.out.println("Servidor de chat encerrado");
-    }
-
-    public void receberMensagem(String mensagem) {
-        System.out.println("Mensagem recebida: " + mensagem);
-    }
-
-    public void enviarMensagemParaTodos(String mensagem) {
-        System.out.println("Mensagem enviada para todos: " + mensagem);
-    }
-
-    public void enviarMensagemPara(String mensagem, String destinatario) {
-        System.out.println("Mensagem enviada para " + destinatario + ": " + mensagem);
-    }
-
-    public void enviarMensagemParaTodosMenos(String mensagem, String remetente) {
-        System.out.println("Mensagem enviada para todos menos " + remetente + ": " + mensagem);
-    }
-
-    public void enviarMensagemParaTodosMenos(String mensagem, String remetente, String destinatario) {
-        System.out.println("Mensagem enviada para todos menos " + remetente + " e " + destinatario + ": " + mensagem);
-    }
-
-    public void enviarMensagemParaTodosMenos(String mensagem, String remetente, String destinatario1, String destinatario2) {
-        System.out.println("Mensagem enviada para todos menos " + remetente + ", " + destinatario1 + " e " + destinatario2 + ": " + mensagem);
-    }
-
-    public void enviarMensagemParaTodosMenos(String mensagem, String remetente, String destinatario1, String destinatario2, String destinatario3) {
-        System.out.println("Mensagem enviada para todos menos " + remetente + ", " + destinatario1 + ", " + destinatario2 + " e " + destinatario3 + ": " + mensagem);
-    }
-
-    public void enviarMensagemParaTodosMenos(String mensagem, String remetente, String destinatario1, String destinatario2, String destinatario3, String destinatario4) {
-        System.out.println("Mensagem enviada para todos menos " + remetente + ", " );
+    public Map<String, Cliente> getClientes() {
+        return clientes;
     }
 }
