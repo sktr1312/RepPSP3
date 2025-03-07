@@ -42,8 +42,8 @@ public class Menu {
         System.out.println("Visualizacion de registros");
         System.out.println("==========================");
         System.out.println("Escocoja un recurso;");
-        System.out.println("1. Clientes");
-        System.out.println("2. Productos");
+        System.out.println("1. telefonos");
+        System.out.println("2. operadores");
         System.out.println("3. Ventas");
 
     }
@@ -52,8 +52,8 @@ public class Menu {
         System.out.println("Escoja un recurso a insertar");
         System.out.println("==========================");
         System.out.println("Escocoja un recurso;");
-        System.out.println("1. Clientes");
-        System.out.println("2. Productos");
+        System.out.println("1. telefonos");
+        System.out.println("2. operadores");
         System.out.println("3. Ventas");
     }
 
@@ -61,8 +61,8 @@ public class Menu {
         System.out.println("Que Recurso quier");
         System.out.println("==========================");
         System.out.println("Escocoja un recurso;");
-        System.out.println("1. Clientes");
-        System.out.println("2. Productos");
+        System.out.println("1. telefonos");
+        System.out.println("2. operadores");
         System.out.println("3. Ventas");
     }
 

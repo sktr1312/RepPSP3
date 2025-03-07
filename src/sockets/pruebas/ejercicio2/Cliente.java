@@ -17,7 +17,7 @@ public class Cliente {
     static final int ERROR_PALABRA_CLAVE = 206;
     static String servidor = "localhost", FIN = "fin", mensaje = "";
     static int puerto = 50000; // puerto ECHO
-
+    
     public static void main(String[] args) {
 
         try (Scanner sc = new Scanner(System.in)) {
