@@ -6,6 +6,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
@@ -24,16 +25,48 @@ public class SendRequest {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(URI_BASE + "/telefonos"))
                 .build();
-        try {
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            JsonObject jsonObject = JsonParser.parseString(response.body()).getAsJsonObject();
 
-            // Extraer el array "data"
+        CompletableFuture<HttpResponse<String>> responseFuture = client.sendAsync(request,
+                HttpResponse.BodyHandlers.ofString());
+
+        int dotsCount = 0;
+        int maxDots = 3; // Máximo número de puntos a mostrar
+
+        System.out.print("Esperando respuesta del servidor");
+
+        while (!responseFuture.isDone()) {
+            // Borra los puntos anteriores
+            for (int i = 0; i < maxDots; i++) {
+                System.out.print("\b \b");
+            }
+
+            // Muestra los nuevos puntos
+            dotsCount = (dotsCount + 1) % (maxDots + 1);
+            for (int i = 0; i < dotsCount; i++) {
+                System.out.print(".");
+            }
+
+            try {
+                Thread.sleep(1); // Pausa para que sea visible la animación
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+
+        // Limpiar la línea completa
+        System.out.print("\r" + " ".repeat(40) + "\r");
+
+        HttpResponse<String> response = responseFuture.join();
+
+        if (response.statusCode() >= 200 && response.statusCode() < 300) {
+            System.out.println("Datos recibidos correctamente");
+
+            JsonObject jsonObject = JsonParser.parseString(response.body()).getAsJsonObject();
             JsonArray jsonData = jsonObject.getAsJsonArray("data");
             return gson.fromJson(jsonData, new TypeToken<List<Telefono>>() {
             }.getType());
-        } catch (IOException | InterruptedException e) {
-            System.err.println("Error al enviar la petición GET");
+        } else {
+            System.out.println("Error al enviar la petición GET. Código: " + response.statusCode());
             return null;
         }
     }
@@ -167,10 +200,10 @@ public class SendRequest {
 
     public static void main(String[] args) {
         SendRequest sr = new SendRequest();
-        List<Telefono> telefonos = sr.sendGetTelefonosTitular("sktrd");
+        List<Telefono> telefonos = sr.sendGetTelefonosRequest();
         Telefono telefono = telefonos.get(0);
-        telefono.setTitular("sktr");
-        sr.sendPutTelefonoRequest(telefono);
+
+
     }
 
 }

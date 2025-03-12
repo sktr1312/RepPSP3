@@ -8,7 +8,7 @@ public class Telefono {
     private int numTelefono;
     @SerializedName("codOperador")
     private Operador operador;
-    @SerializedName("Titular")
+    @SerializedName("titular")
     private String titular;
 
     public Telefono() {
@@ -50,7 +50,7 @@ public class Telefono {
                 "numTelefono=" + numTelefono +
                 ", operador=" + operador +
                 ", titular='" + titular + '\'' +
-                '}';
+                "}\n";
     }
 
 }

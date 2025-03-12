@@ -14,7 +14,7 @@ import clienteHttp.models.Historial;
 import clienteHttp.models.Operador;
 import clienteHttp.models.Telefono;
 
-public class HistorialDeserializer implements JsonDeserializer<Historial>,JsonSerializer<Historial> {
+public class HistorialDeserializer implements JsonDeserializer<Historial>, JsonSerializer<Historial> {
 
     @Override
     public JsonElement serialize(Historial arg0, Type arg1, JsonSerializationContext arg2) {
@@ -33,13 +33,14 @@ public class HistorialDeserializer implements JsonDeserializer<Historial>,JsonSe
         JsonObject jsonObject = arg0.getAsJsonObject();
         int id = jsonObject.get("id").getAsInt();
         Telefono telefono = new SendRequest().sendGetTelefonoRequest(jsonObject.get("telefono").getAsInt());
-        Operador operadorAntiguo = new SendRequest().sendGetOperadorRequest(jsonObject.get("codOperadorAntiguo").getAsInt());
-        Operador operadorNuevo = new SendRequest().sendGetOperadorRequest(jsonObject.get("codOperadorNuevo").getAsInt());
+        Operador operadorAntiguo = new SendRequest()
+                .sendGetOperadorRequest(jsonObject.get("codOperadorAntiguo").getAsInt());
+        Operador operadorNuevo = new SendRequest()
+                .sendGetOperadorRequest(jsonObject.get("codOperadorNuevo").getAsInt());
         String motivos = jsonObject.get("motivos").getAsString();
-                
+
         Historial historial = new Historial(id, telefono, operadorAntiguo, operadorNuevo, motivos);
         return historial;
     }
-    
-    
+
 }
