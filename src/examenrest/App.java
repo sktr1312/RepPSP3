@@ -1,7 +1,12 @@
 package examenrest;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import examenrest.models.Historial;
 import examenrest.menu.Menu;
@@ -104,22 +109,58 @@ public class App {
         String titular = "";
         SendRequest sendRequest = new SendRequest();
         List<Telefono> telefonos = new ArrayList<>();
-        System.out.println("Introduzca el nombre del titular: ");
-        titular = System.console().readLine();
-        sendRequest.getTelefonosTitular(titular).thenAccept(telefono -> {
-            if (telefono == null || telefono.isEmpty()) {
+        Set<String> titulares = new HashSet<>();
+        sendRequest.getTitulares().thenAccept(titular1 -> {
+            if (titular1 == null || titular1.isEmpty()) {
                 System.out.println("No hay registros para mostrar");
 
-            } else
-                telefonos.addAll(telefono);
-        }).join();
-        if (!telefonos.isEmpty()) {
-            System.out.printf("%-15s %-15s %-15s\n", "Número", "Operador", "Titular");
-            System.out.println("--------------------------------------------");
-            telefonos.forEach(telefono -> {
-                System.out.printf("%-15s %-15s %-15s\n", telefono.getNumTelefono(), telefono.getOperador().getNombre(),
-                        telefono.getTitular());
-            });
+            } else {
+                titulares.addAll(titular1);
+            }
+        });
+        if (!titulares.isEmpty()) {
+            boolean valido = false;
+            do {
+                TerminalUtils.clearScreen();
+                System.out.printf("%-15s\n", "Titulares");
+                System.out.println("--------------------------------------------");
+                titulares.forEach(System.out::println);
+
+                System.out.println("Introduzca el nombre del titular: ");
+
+                titular = System.console().readLine();
+                if (titulares.contains(titular)) {
+                    valido = true;
+                } else {
+                    System.err.println("Error: Titular no válido");
+                    System.out.println("Presione Enter para continuar...");
+                    System.console().readLine();
+                }
+            } while (!valido);
+            if (titular.trim().contains(" ")) {
+                try {
+                    titular = URLEncoder.encode(titular, "UTF-8");
+                } catch (UnsupportedEncodingException e) {
+                    System.err.println("Error al codificar el titular");
+                    return;
+                }
+            }
+            sendRequest.getTelefonosTitular(titular).thenAccept(telefono -> {
+                if (telefono == null || telefono.isEmpty()) {
+                    System.out.println("No hay registros para mostrar");
+
+                } else
+                    telefonos.addAll(telefono);
+            }).join();
+            if (!telefonos.isEmpty()) {
+                System.out.printf("%-15s %-15s %-15s\n", "Número", "Operador", "Titular");
+                System.out.println("--------------------------------------------");
+                telefonos.forEach(telefono -> {
+                    System.out.printf("%-15s %-15s %-15s\n", telefono.getNumTelefono(),
+                            telefono.getOperador().getNombre(),
+                            telefono.getTitular());
+                });
+            }
         }
 
     }
@@ -174,10 +215,13 @@ public class App {
             System.out.println("--------------------------------------------");
             historial.forEach(historial1 -> {
                 System.out.printf("%-15s %-15s %-15s %-15s %-15s\n",
-                        historial1.getId(), historial1.getTelefono().getNumTelefono(), historial1.getOperadorAntiguo().getNombre(),
+                        historial1.getId(), historial1.getTelefono().getNumTelefono(),
+                        historial1.getOperadorAntiguo().getNombre(),
                         historial1.getOperadorNuevo().getNombre());
             });
 
         }
     }
+
+    
 }

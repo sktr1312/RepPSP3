@@ -126,6 +126,8 @@ public class SendRequest {
         }
     }
 
+    
+
     public boolean sendPutTelefonoRequest(Telefono telefono) {
         boolean result = false;
         HttpRequest request = HttpRequest.newBuilder()
@@ -200,9 +202,9 @@ public class SendRequest {
 
     public static void main(String[] args) {
         SendRequest sr = new SendRequest();
-        List<Telefono> telefonos = sr.sendGetTelefonosRequest();
-        Telefono telefono = telefonos.get(0);
-
+        // List<Telefono> telefonos = sr.sendGetTelefonosRequest();
+        // Telefono telefono = telefonos.get(0);
+        
 
     }
 

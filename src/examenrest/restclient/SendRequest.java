@@ -1,10 +1,10 @@
 package examenrest.restclient;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -31,8 +31,14 @@ public class SendRequest {
 
     // Método genérico para construir peticiones HTTP
     private HttpRequest buildRequest(String endpoint, String method, Object body) {
-        HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
-                .uri(URI.create(URI_BASE + endpoint));
+        HttpRequest.Builder requestBuilder = null;
+        try {
+            requestBuilder = HttpRequest.newBuilder()
+                    .uri(new URI(URI_BASE + endpoint));
+        } catch (URISyntaxException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
 
         switch (method) {
             case "GET":
