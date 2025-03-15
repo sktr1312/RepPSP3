@@ -2,7 +2,7 @@ package examenrest.menu;
 
 import java.util.ArrayList;
 import java.util.List;
-import clienteHttp.utiles.TerminalUtils;
+import examenrest.utiles.TerminalUtils;
 
 // Modificar la clase Menu para limpiar la pantalla entre navegaciones
 // Clase para un menú que puede contener otros menús o items

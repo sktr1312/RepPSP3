@@ -1,6 +1,6 @@
 package examenrest.menu;
 
-import clienteHttp.commands.Command;
+import examenrest.commands.Command;
 import examenrest.commands.PrintCommand;
 
 // Clase para un elemento de menú (hoja del composite)
