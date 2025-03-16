@@ -17,6 +17,8 @@ import examenrest.restclient.SendRequest;
 import examenrest.utiles.TerminalUtils;
 
 public class App {
+    static SendRequest sendRequest = new SendRequest();
+
     public static void main(String[] args) {
         // menu principal
         Menu menu = new Menu("Menú principal");
@@ -42,6 +44,8 @@ public class App {
         SubMenu eliminarRegistros = new SubMenu(new Menu("Eliminar Registros"));
         // submenu insertar registros
         SubMenu insertarRegistros = new SubMenu(new Menu("Insertar Registros"));
+        // añadir opciones a insertar registros
+        insertarRegistros.getMenu().addComponent(new MenuItem("Añadir telefono", App::anhadirTelefono));
         // añadir submenus al menu principal
         menu.addComponent(verRegistros);
         menu.addComponent(actualizarRegistros);
@@ -50,10 +54,66 @@ public class App {
 
     }
 
+    public static void anhadirTelefono() {
+        TerminalUtils.clearScreen();
+        Telefono telefono = new Telefono();
+        Operador operador = getOperador();
+        telefono.setOperador(operador);
+        int numTelefono = 0;
+        boolean valido = false;
+        do {
+            System.out.println("Introduzca el número de teléfono: ");
+            try {
+                numTelefono = Integer.parseInt(System.console().readLine());
+                if (Integer.toString(numTelefono).length() == 9) {
+                    valido = true;
+                } else {
+                    System.err.println("Error: El número de teléfono debe tener 9 dígitos");
+                }
+            } catch (NumberFormatException e) {
+                System.err.println("Error: Debe introducir un número");
+            }
+        } while (!valido);
+        telefono.setNumTelefono(numTelefono);
+
+        String titular = getTitular();
+        telefono.setTitular(titular);
+        sendRequest.postTelefono(telefono).thenAccept(create -> {
+            if (create) {
+                System.out.println("Teléfono añadido correctamente");
+            } else {
+                System.err.println("Error al añadir el teléfono");
+            }
+        });
+
+    }
+
     public static void visualizarTelefonosPorOperador() {
         TerminalUtils.clearScreen();
+        int codOperador = getOperador().getCodOperador();
+        List<Telefono> telefonos = new ArrayList<>();
+
+        sendRequest.getTelefonosPorOperador(codOperador).thenAccept(telefono -> {
+            if (telefono == null || telefono.isEmpty()) {
+                System.out.println("No hay registros para mostrar");
+
+            } else
+                telefonos.addAll(telefono);
+        }).join();
+        if (!telefonos.isEmpty()) {
+            System.out.printf("%-15s %-15s %-15s\n", "Número", "Operador", "Titular");
+            System.out.println("--------------------------------------------");
+            telefonos.forEach(telefono -> {
+                System.out.printf("%-15s %-15s %-15s\n", telefono.getNumTelefono(), telefono.getOperador().getNombre(),
+                        telefono.getTitular());
+            });
+        }
+        // telefonos.forEach(System.out::println);
+
+    }
+
+    private static Operador getOperador() {
         int codOperador = 0;
-        SendRequest sendRequest = new SendRequest();
         List<Operador> operadores = new ArrayList<>();
         sendRequest.getOperadores().thenAccept(operador -> {
             operadores.addAll(operador);
@@ -81,33 +141,11 @@ public class App {
             }
         } while (!valido);
         TerminalUtils.clearScreen();
-
-        List<Telefono> telefonos = new ArrayList<>();
-
-        sendRequest.getTelefonosPorOperador(codOperador).thenAccept(telefono -> {
-            if (telefono == null || telefono.isEmpty()) {
-                System.out.println("No hay registros para mostrar");
-
-            } else
-                telefonos.addAll(telefono);
-        }).join();
-        if (!telefonos.isEmpty()) {
-            System.out.printf("%-15s %-15s %-15s\n", "Número", "Operador", "Titular");
-            System.out.println("--------------------------------------------");
-            telefonos.forEach(telefono -> {
-                System.out.printf("%-15s %-15s %-15s\n", telefono.getNumTelefono(), telefono.getOperador().getNombre(),
-                        telefono.getTitular());
-            });
-        }
-        // telefonos.forEach(System.out::println);
-
+        return operadores.get(operadores.indexOf(new Operador(codOperador, "")));
     }
 
-    public static void visualizarTelefonosPorTitular() {
-        TerminalUtils.clearScreen();
+    private static String getTitular() {
         String titular = "";
-        SendRequest sendRequest = new SendRequest();
-        List<Telefono> telefonos = new ArrayList<>();
         Set<String> titulares = new HashSet<>();
         sendRequest.getTitulares().thenAccept(titular1 -> {
             if (titular1 == null || titular1.isEmpty()) {
@@ -136,30 +174,43 @@ public class App {
                     System.console().readLine();
                 }
             } while (!valido);
-            if (titular.trim().contains(" ")) {
-                try {
-                    titular = URLEncoder.encode(titular, "UTF-8");
-                } catch (UnsupportedEncodingException e) {
-                    System.err.println("Error al codificar el titular");
-                    return;
-                }
-            }
-            sendRequest.getTelefonosTitular(titular).thenAccept(telefono -> {
-                if (telefono == null || telefono.isEmpty()) {
-                    System.out.println("No hay registros para mostrar");
+            TerminalUtils.clearScreen();
+            return titular;
+        } else {
+            System.err.println("No hay registros para mostrar");
+            return titular;
+        }
 
-                } else
-                    telefonos.addAll(telefono);
-            }).join();
-            if (!telefonos.isEmpty()) {
-                System.out.printf("%-15s %-15s %-15s\n", "Número", "Operador", "Titular");
-                System.out.println("--------------------------------------------");
-                telefonos.forEach(telefono -> {
-                    System.out.printf("%-15s %-15s %-15s\n", telefono.getNumTelefono(),
-                            telefono.getOperador().getNombre(),
-                            telefono.getTitular());
-                });
+    }
+
+    public static void visualizarTelefonosPorTitular() {
+        TerminalUtils.clearScreen();
+        String titular = getTitular();
+        List<Telefono> telefonos = new ArrayList<>();
+
+        if (titular.trim().contains(" ")) {
+            try {
+                titular = URLEncoder.encode(titular, "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                System.err.println("Error al codificar el titular");
+                return;
             }
+        }
+        sendRequest.getTelefonosTitular(titular).thenAccept(telefono -> {
+            if (telefono == null || telefono.isEmpty()) {
+                System.out.println("No hay registros para mostrar");
+
+            } else
+                telefonos.addAll(telefono);
+        }).join();
+        if (!telefonos.isEmpty()) {
+            System.out.printf("%-15s %-15s %-15s\n", "Número", "Operador", "Titular");
+            System.out.println("--------------------------------------------");
+            telefonos.forEach(telefono -> {
+                System.out.printf("%-15s %-15s %-15s\n", telefono.getNumTelefono(),
+                        telefono.getOperador().getNombre(),
+                        telefono.getTitular());
+            });
         }
 
     }
@@ -167,7 +218,7 @@ public class App {
     public static void visualizarHistorialNumero() {
         TerminalUtils.clearScreen();
         int numTelefono = 0;
-        SendRequest sendRequest = new SendRequest();
+
         List<Telefono> telefonos = new ArrayList<>();
         sendRequest.getTelefonos().thenAccept(telefono -> {
             if (telefono == null || telefono.isEmpty()) {
@@ -175,7 +226,7 @@ public class App {
 
             } else
                 telefonos.addAll(telefono);
-        }).join();
+        });
         if (!telefonos.isEmpty()) {
             System.out.printf("%-15s\n", "Números");
             System.out.println("----------------------");
@@ -222,5 +273,4 @@ public class App {
         }
     }
 
-    
 }

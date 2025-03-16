@@ -22,6 +22,9 @@ public class SendRequest {
     private static final String URI_BASE = "http://localhost/rest/index.php";
     private final Gson gson;
 
+    /**
+     * Constructor de la clase
+     */
     public SendRequest() {
         this.gson = new GsonBuilder()
                 .registerTypeAdapter(Telefono.class, new TelefonoDeserializer())
@@ -29,40 +32,58 @@ public class SendRequest {
                 .create();
     }
 
-    // Método genérico para construir peticiones HTTP
+    /**
+     * Construye una petición HTTP
+     * 
+     * @param endpoint
+     * @param method
+     * @param body
+     * @return
+     */
     private HttpRequest buildRequest(String endpoint, String method, Object body) {
         HttpRequest.Builder requestBuilder = null;
+        HttpRequest request = null;
         try {
             requestBuilder = HttpRequest.newBuilder()
                     .uri(new URI(URI_BASE + endpoint));
         } catch (URISyntaxException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            System.err.println("Error al construir la URI: " + e.getMessage());
         }
+        if (requestBuilder != null) {
+            switch (method) {
+                case "GET":
+                    requestBuilder.GET();
+                    break;
+                case "POST":
+                    requestBuilder.header("Content-Type", "application/json")
+                            .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(body)));
+                    break;
+                case "PUT":
+                    requestBuilder.header("Content-Type", "application/json")
+                            .PUT(HttpRequest.BodyPublishers.ofString(gson.toJson(body)));
+                    break;
+                case "DELETE":
+                    requestBuilder.DELETE();
+                    break;
+                default:
+                    throw new IllegalArgumentException("Método HTTP no soportado: " + method);
+            }
 
-        switch (method) {
-            case "GET":
-                requestBuilder.GET();
-                break;
-            case "POST":
-                requestBuilder.header("Content-Type", "application/json")
-                        .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(body)));
-                break;
-            case "PUT":
-                requestBuilder.header("Content-Type", "application/json")
-                        .PUT(HttpRequest.BodyPublishers.ofString(gson.toJson(body)));
-                break;
-            case "DELETE":
-                requestBuilder.DELETE();
-                break;
-            default:
-                throw new IllegalArgumentException("Método HTTP no soportado: " + method);
+            request = requestBuilder.build();
         }
+        return request;
 
-        return requestBuilder.build();
     }
 
     // Método genérico para enviar peticiones asíncronas
+    /**
+     * 
+     * @param <T>
+     * @param request
+     * @param responseHandler
+     * @param showLoadingAnimation
+     * @return
+     */
     private <T> CompletableFuture<T> sendAsyncRequest(HttpRequest request,
             JsonResponseHandler<T> responseHandler,
             boolean showLoadingAnimation) {
@@ -74,10 +95,9 @@ public class SendRequest {
         }
 
         return responseFuture.thenApply(response -> {
-            if (response.statusCode() >= 200 && response.statusCode() < 300) {
+            if (responseHandler != null) {
                 return responseHandler.handleResponse(response);
             } else {
-                System.out.println("Error en la petición. Código: " + response.statusCode());
                 return null;
             }
         }).exceptionally(ex -> {
@@ -131,9 +151,17 @@ public class SendRequest {
     public CompletableFuture<List<Telefono>> getTelefonos() {
         HttpRequest request = buildRequest("/telefonos", "GET", null);
         return sendAsyncRequest(request,
-                response -> gson.fromJson(extractJsonData(response),
-                        new TypeToken<List<Telefono>>() {
-                        }.getType()),
+                response -> {
+                    if (response.statusCode() >= 200 && response.statusCode() < 300) {
+                        return gson.fromJson(extractJsonData(response), new TypeToken<List<Telefono>>() {
+                        }.getType());
+                    } else {
+                        System.out.println("Error al enviar la petición GET. Código: " + response.statusCode());
+                        return null;
+
+                    }
+
+                },
                 true);
     }
 
@@ -146,15 +174,21 @@ public class SendRequest {
                             }.getType());
                     return telefonos.isEmpty() ? null : telefonos.get(0);
                 },
-                false);
+                true);
     }
 
     public CompletableFuture<List<Telefono>> getTelefonosTitular(String titular) {
         HttpRequest request = buildRequest("/telefonos/titular/" + titular, "GET", null);
         return sendAsyncRequest(request,
-                response -> gson.fromJson(extractJsonData(response),
-                        new TypeToken<List<Telefono>>() {
-                        }.getType()),
+                response -> {
+                    List<Telefono> telefonos = null;
+                    if (response.statusCode() >= 200 && response.statusCode() < 300) {
+                        telefonos = gson.fromJson(extractJsonData(response),
+                                new TypeToken<List<Telefono>>() {
+                                }.getType());
+                    }
+                    return telefonos.isEmpty() ? null : telefonos;
+                },
                 false);
     }
 
@@ -218,8 +252,11 @@ public class SendRequest {
         HttpRequest request = buildRequest("/telefonos/" + telefono.getNumTelefono(), "PUT", telefono);
         return sendAsyncRequest(request,
                 response -> {
-                    System.out.println(response.body());
-                    return true;
+                    if (response.statusCode() >= 200 && response.statusCode() < 300) {
+                        return true;
+                    } else {
+                        return false;
+                    }
                 },
                 false);
     }
@@ -310,19 +347,22 @@ public class SendRequest {
                 response -> gson.fromJson(extractJsonData(response),
                         new TypeToken<List<Historial>>() {
                         }.getType()),
-                false);
+                true);
     }
 
     public CompletableFuture<List<Historial>> getHistorialTelefono(int numTelefono) {
         HttpRequest request = buildRequest("/historiales/telefono" + numTelefono, "GET", null);
         return sendAsyncRequest(request,
                 response -> {
+                    if (response.statusCode() >= 200 && response.statusCode() < 300) {
+                        System.out.println(response.body());
+                    }
                     List<Historial> historiales = gson.fromJson(extractJsonData(response),
                             new TypeToken<List<Historial>>() {
                             }.getType());
                     return historiales.isEmpty() ? null : historiales;
                 },
-                false);
+                true);
     }
 
     public CompletableFuture<Boolean> postHistorial(Historial historial) {
@@ -332,7 +372,7 @@ public class SendRequest {
                     System.out.println(response.body());
                     return true;
                 },
-                false);
+                true);
     }
 
     public CompletableFuture<Boolean> putHistorial(Historial historial) {
@@ -343,7 +383,7 @@ public class SendRequest {
                     System.out.println(response.body());
                     return true;
                 },
-                false);
+                true);
     }
 
 }
