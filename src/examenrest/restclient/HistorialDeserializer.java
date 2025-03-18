@@ -13,6 +13,7 @@ import com.google.gson.JsonSerializer;
 import examenrest.models.Historial;
 import examenrest.models.Operador;
 import examenrest.models.Telefono;
+import restclient.RestClientFacade;
 
 public class HistorialDeserializer implements JsonDeserializer<Historial>, JsonSerializer<Historial> {
 
@@ -32,22 +33,14 @@ public class HistorialDeserializer implements JsonDeserializer<Historial>, JsonS
             throws JsonParseException {
         JsonObject jsonObject = arg0.getAsJsonObject();
         int id = jsonObject.get("id").getAsInt();
-        Telefono[] telefono = new Telefono[1];
+
         SendRequest sendRequest = new SendRequest();
-        sendRequest.getTelefono(jsonObject.get("telefono").getAsInt()).thenAccept(it -> {
-            telefono[0] = it;
-        }).join();
-        Operador[] operadorAntiguo = new Operador[1];
-        sendRequest.getOperador(jsonObject.get("codOperadorAntiguo").getAsInt()).thenAccept(op -> {
-            operadorAntiguo[0] = op;
-        }).join();
-        Operador[] operadorNuevo = new Operador[1];
-        sendRequest.getOperador(jsonObject.get("codOperadorNuevo").getAsInt()).thenAccept(op -> {
-            operadorNuevo[0] = op;
-        }).join();
+        Telefono telefono = sendRequest.getTelefono(jsonObject.get("telefono").getAsInt()).resultNow();
+        Operador operadorAntiguo = sendRequest.getOperador(jsonObject.get("codOperadorAntiguo").getAsInt()).resultNow();
+        Operador operadorNuevo = sendRequest.getOperador(jsonObject.get("codOperadorNuevo").getAsInt()).resultNow();
         String motivos = jsonObject.get("motivos").getAsString();
 
-        Historial historial = new Historial(id, telefono[0], operadorAntiguo[0], operadorNuevo[0], motivos);
+        Historial historial = new Historial(id, telefono, operadorAntiguo, operadorNuevo, motivos);
         return historial;
     }
 

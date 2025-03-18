@@ -36,26 +36,41 @@ public class Menu implements MenuComponent {
 
     @Override
     public void execute() {
+        java.util.Scanner scanner = new java.util.Scanner(System.in);
         int choice;
         do {
             TerminalUtils.clearScreen();
             display();
             System.out.print("Seleccione una opción: ");
+            
             try {
-                choice = Integer.parseInt( System.console().readLine());
+                // Usar Scanner en lugar de System.console()
+                String input = scanner.nextLine().trim();
+                
+                // Si el input está vacío, pedir de nuevo
+                if (input.isEmpty()) {
+                    choice = -1;
+                    continue;
+                }
+                
+                choice = Integer.parseInt(input);
+                
                 if (choice > 0 && choice <= components.size()) {
                     components.get(choice - 1).execute();
                 } else if (choice != 0) {
                     System.out.println("Opción no válida");
                     System.out.println("Presione Enter para continuar...");
-                    System.console().readLine();
+                    scanner.nextLine();
                 }
             } catch (NumberFormatException e) {
                 System.out.println("Por favor, ingrese un número");
                 System.out.println("Presione Enter para continuar...");
-                System.console().readLine();
+                scanner.nextLine();
                 choice = -1;
             }
         } while (choice != 0);
+        
+        // No cerramos scanner aquí porque podría cerrar System.in
+        // y afectar otras partes del programa que lo usen
     }
 }

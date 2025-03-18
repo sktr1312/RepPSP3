@@ -38,14 +38,20 @@ public class App {
                 .addComponent(new MenuItem("Ver telefonos de un titular", App::visualizarTelefonosPorTitular));
         verRegistros.getMenu()
                 .addComponent(new MenuItem("Ver historial de un número", App::visualizarHistorialNumero));
+        verRegistros.getMenu()
+                .addComponent(new MenuItem("Ver todos los telefonos", App::visualizarTelefonos));
         // submenus actualizar registros
         SubMenu actualizarRegistros = new SubMenu(new Menu("Actualizar Registros"));
+        // añadir opciones a actualizar registros
+        actualizarRegistros.getMenu()
+                .addComponent(new MenuItem("Actualizar operador", App::actualizarOperador));
         // submenus eliminar registros
         SubMenu eliminarRegistros = new SubMenu(new Menu("Eliminar Registros"));
         // submenu insertar registros
         SubMenu insertarRegistros = new SubMenu(new Menu("Insertar Registros"));
         // añadir opciones a insertar registros
-        insertarRegistros.getMenu().addComponent(new MenuItem("Añadir telefono", App::anhadirTelefono));
+        insertarRegistros.getMenu()
+                .addComponent(new MenuItem("Añadir telefono", App::anhadirTelefono));
         // añadir submenus al menu principal
         menu.addComponent(verRegistros);
         menu.addComponent(actualizarRegistros);
@@ -54,19 +60,92 @@ public class App {
 
     }
 
-    public static void anhadirTelefono() {
+    public static void actualizarOperador() {
         TerminalUtils.clearScreen();
-        Telefono telefono = new Telefono();
+        List<Telefono> telefonos = sendRequest.getTelefonos().resultNow();
+        Telefono telefono = getTelefono(telefonos);
+        TerminalUtils.clearScreen();
         Operador operador = getOperador();
+        Operador operadorAntiguo = telefono.getOperador();
         telefono.setOperador(operador);
+        if (sendRequest.putTelefono(telefono).resultNow()) {
+            System.out.println("Teléfono actualizado correctamente");
+            System.out.println("Presione Enter para continuar...");
+            System.console().readLine();
+            TerminalUtils.clearScreen();
+            String motivo = "";
+            do {
+                System.out.println("Introduzca el motivo del cambio de operador: ");
+                motivo = System.console().readLine();
+                if (!motivo.trim().isEmpty()) {
+                    Historial historial = new Historial();
+                    historial.setTelefono(telefono);
+                    historial.setOperadorAntiguo(operadorAntiguo);
+                    historial.setOperadorNuevo(operador);
+                    historial.setMotivos(motivo);
+                    TerminalUtils.clearScreen();
+                    sendRequest.postHistorial(historial).thenAccept(create -> {
+                        if (create) {
+                            System.out.println("Historial añadido correctamente");
+                        } else {
+                            System.err.println("Error al añadir el historial");
+                        }
+                    });
+
+                }
+            } while (motivo.trim().isEmpty());
+
+        } else {
+            System.err.println("Error al actualizar el teléfono");
+
+        }
+
+    }
+
+    private static Telefono getTelefono(List<Telefono> telefonos) {
+        System.out.printf("%-15s %-15s %-15s\n", "Número", "Operador", "Titular");
+        System.out.println("--------------------------------------------");
+        telefonos.forEach(telefono -> {
+            System.out.printf("%-15s %-15s %-15s\n", telefono.getNumTelefono(), telefono.getOperador().getNombre(),
+                    telefono.getTitular());
+        });
         int numTelefono = 0;
         boolean valido = false;
         do {
             System.out.println("Introduzca el número de teléfono: ");
             try {
                 numTelefono = Integer.parseInt(System.console().readLine());
+                final int numTelefonoFinal = numTelefono;
+                if (telefonos.stream().anyMatch(telefono -> telefono.getNumTelefono() == numTelefonoFinal)) {
+                    valido = true;
+                } else {
+                    System.err.println("Error: Número de teléfono no válido");
+                }
+            } catch (NumberFormatException e) {
+                System.err.println("Error: Debe introducir un número");
+            }
+        } while (!valido);
+        return telefonos.get(telefonos.indexOf(new Telefono(numTelefono, null, "")));
+    }
+
+    public static void anhadirTelefono() {
+        TerminalUtils.clearScreen();
+        Telefono telefono = new Telefono();
+        Operador operador = getOperador();
+        telefono.setOperador(operador);
+        List<Telefono> telefonos = sendRequest.getTelefonos().resultNow();
+        int numTelefono = 0;
+        boolean valido = false;
+        do {
+            System.out.println("Introduzca el número de teléfono: ");
+            try {
+                numTelefono = Integer.parseInt(System.console().readLine());
+                final int numTelefonoFinal = numTelefono;
                 if (Integer.toString(numTelefono).length() == 9) {
                     valido = true;
+                } else if (!telefonos.stream()
+                        .anyMatch(telefono1 -> telefono1.getNumTelefono() == numTelefonoFinal)) {
+                    System.err.println("Error: El número de teléfono ya existe");
                 } else {
                     System.err.println("Error: El número de teléfono debe tener 9 dígitos");
                 }
@@ -84,6 +163,18 @@ public class App {
             } else {
                 System.err.println("Error al añadir el teléfono");
             }
+        });
+
+    }
+
+    public static void visualizarTelefonos() {
+        TerminalUtils.clearScreen();
+        List<Telefono> telefonos = sendRequest.getTelefonos().resultNow();
+        System.out.printf("%-15s %-15s %-15s\n", "Número", "Operador", "Titular");
+        System.out.println("--------------------------------------------");
+        telefonos.forEach(telefono -> {
+            System.out.printf("%-15s %-15s %-15s\n", telefono.getNumTelefono(), telefono.getOperador().getNombre(),
+                    telefono.getTitular());
         });
 
     }
@@ -260,14 +351,15 @@ public class App {
                 historial.addAll(hist);
         }).join();
         if (!historial.isEmpty()) {
-            System.out.printf("%-15s %-15s %-15s %-15s %-15s\n", "Id", "Número Telefono", "Operador Antiguo",
+            System.out.printf("%-5s %-20s %-20s %-20s %-20s\n", "Id", "Número Telefono", "Operador Antiguo",
                     "Operador Nuevo", "Motivos");
             System.out.println("--------------------------------------------");
             historial.forEach(historial1 -> {
-                System.out.printf("%-15s %-15s %-15s %-15s %-15s\n",
+                System.out.printf("%-5s %-20s %-20s %-20s %-20s\n",
                         historial1.getId(), historial1.getTelefono().getNumTelefono(),
                         historial1.getOperadorAntiguo().getNombre(),
-                        historial1.getOperadorNuevo().getNombre());
+                        historial1.getOperadorNuevo().getNombre(),
+                        historial1.getMotivos());
             });
 
         }
