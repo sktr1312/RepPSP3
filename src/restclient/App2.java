@@ -13,7 +13,6 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import examenrest.models.Historial;
-import restclient.commands.Command;
 import restclient.menu.Menu;
 import restclient.menu.MenuItem;
 import restclient.menu.SubMenu;

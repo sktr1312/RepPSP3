@@ -6,6 +6,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 
 import com.google.gson.Gson;
 
@@ -52,7 +53,7 @@ public class HttpClientWrapper {
     }
 
     public <T> CompletableFuture<T> sendAsyncRequest(HttpRequest request,
-            ResponseHandler<T> responseHandler,
+            Function<HttpResponse<String>,T> responseHandler,
             boolean showLoadingAnimation) {
 
         CompletableFuture<HttpResponse<String>> responseFuture = client.sendAsync(
@@ -64,7 +65,7 @@ public class HttpClientWrapper {
 
         return responseFuture.thenApply(response -> {
             if (responseHandler != null) {
-                return responseHandler.handleResponse(response);
+                return responseHandler.apply(response);
             } else {
                 return null;
             }

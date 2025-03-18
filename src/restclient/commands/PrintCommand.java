@@ -1,7 +1,7 @@
 package restclient.commands;
 
 // Comando para imprimir un mensaje en pantalla
-public class PrintCommand implements Command {
+public class PrintCommand implements Runnable {
     private String message;
 
     public PrintCommand(String message) {
@@ -9,7 +9,7 @@ public class PrintCommand implements Command {
     }
 
     @Override
-    public void execute() {
+    public void run() {
         System.out.println(message);
         System.console().readLine();
     }
