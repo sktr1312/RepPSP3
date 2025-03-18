@@ -6,7 +6,7 @@ import java.util.Scanner;
 
 import restclient.utiles.TerminalUtils;
 
-// Modificar la clase Menu para limpiar la pantalla entre navegaciones
+
 // Clase para un menú que puede contener otros menús o items
 public class Menu implements MenuComponent {
     private String title;
@@ -45,10 +45,8 @@ public class Menu implements MenuComponent {
             System.out.print("Seleccione una opción: ");
 
             try {
-                // Usar Scanner en lugar de System.console()
                 String input = scanner.nextLine().trim();
 
-                // Si el input está vacío, pedir de nuevo
                 if (input.isEmpty()) {
                     choice = -1;
                     continue;
@@ -71,7 +69,5 @@ public class Menu implements MenuComponent {
             }
         } while (choice != 0);
 
-        // No cerramos scanner aquí porque podría cerrar System.in
-        // y afectar otras partes del programa que lo usen
     }
 }

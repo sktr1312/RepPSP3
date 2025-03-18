@@ -10,13 +10,11 @@ public class SubMenu implements MenuComponent {
 
     @Override
     public void display() {
-        // Solo muestra el título del menu
         System.out.println(menu.getTitle());
     }
 
     @Override
     public void execute() {
-        // delega el execute al menu
         menu.execute();
     }
 

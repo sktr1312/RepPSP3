@@ -1,29 +1,23 @@
 package restclient;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
-
 import examenrest.models.Historial;
-import restclient.commands.Command;
 import restclient.menu.Menu;
 import restclient.menu.MenuItem;
 import restclient.menu.SubMenu;
 import examenrest.models.Operador;
 import examenrest.models.Telefono;
+import restclient.utiles.AplicacionUtils;
 import restclient.utiles.TerminalUtils;
 
 /**
- * Aplicación cliente para consumir servicios REST relacionados con la gestión de teléfonos.
- * Implementa un sistema de menús para facilitar la interacción con los servicios.
+ * Aplicación cliente para consumir servicios REST relacionados con la gestión
+ * de teléfonos.
+ * Implementa un sistema de menús para facilitar la interacción con los
+ * servicios.
  */
 public class AppDocumentada {
     /** Cliente REST utilizado para realizar peticiones al servidor */
@@ -50,74 +44,40 @@ public class AppDocumentada {
      */
     private static void addSubmenus(Menu menu) {
         // Submenú para visualizar registros
-        SubMenu verRegistros = createSubmenu("Visualizar Registros");
-        addMenuItem(verRegistros, 
+        SubMenu verRegistros = AplicacionUtils.createSubmenu("Visualizar Registros");
+        AplicacionUtils.addMenuItem(verRegistros,
                 new MenuItem("Ver todos los operadores", AppDocumentada::visualizarTelefonosPorOperador),
                 new MenuItem("Ver todos los titulares", AppDocumentada::visualizarTelefonosPorTitular),
                 new MenuItem("Ver todos los historiales", AppDocumentada::visualizarHistorialNumero),
                 new MenuItem("Ver todos los telefonos", AppDocumentada::visualizarTelefonos));
 
         // Submenú para actualizar registros
-        SubMenu actualizarRegistros = createSubmenu("Actualizar Registros");
-        addMenuItem(actualizarRegistros, 
+        SubMenu actualizarRegistros = AplicacionUtils.createSubmenu("Actualizar Registros");
+        AplicacionUtils.addMenuItem(actualizarRegistros,
                 new MenuItem("Actualizar operador", AppDocumentada::actualizarOperador));
 
         // Submenú para eliminar registros (sin opciones implementadas)
-        SubMenu eliminarRegistros = createSubmenu("Eliminar Registros");
+        SubMenu eliminarRegistros = AplicacionUtils.createSubmenu("Eliminar Registros");
 
         // Submenú para insertar registros
-        SubMenu insertarRegistros = createSubmenu("Insertar Registros");
-        addMenuItem(insertarRegistros, 
+        SubMenu insertarRegistros = AplicacionUtils.createSubmenu("Insertar Registros");
+        AplicacionUtils.addMenuItem(insertarRegistros,
                 new MenuItem("Añadir teléfono", AppDocumentada::anhadirTelefono));
 
         // Añadir todos los submenús al menú principal
-        addSubmenuToMenu(menu, verRegistros, actualizarRegistros, eliminarRegistros, insertarRegistros);
+        AplicacionUtils.addSubmenuToMenu(menu, verRegistros, actualizarRegistros, eliminarRegistros, insertarRegistros);
     }
-
-    /**
-     * Crea un nuevo submenú con el título especificado.
-     * 
-     * @param title Título del submenú
-     * @return SubMenu creado
-     */
-    private static SubMenu createSubmenu(String title) {
-        return new SubMenu(new Menu(title));
-    }
-
-    /**
-     * Añade elementos de menú a un submenú.
-     * 
-     * @param submenu Submenú al que se añadirán los elementos
-     * @param items Elementos a añadir
-     */
-    private static void addMenuItem(SubMenu submenu, MenuItem... items) {
-        for (MenuItem item : items) {
-            submenu.getMenu().addComponent(item);
-        }
-    }
-
-    /**
-     * Añade submenús al menú principal.
-     * 
-     * @param menu Menú principal
-     * @param submenu Array de submenús a añadir
-     */
-    private static void addSubmenuToMenu(Menu menu, SubMenu... submenu) {
-        for (SubMenu sub : submenu)
-            menu.addComponent(sub);
-    }
-
-    // ==================== FUNCIONALIDADES PRINCIPALES ====================
 
     /**
      * Actualiza el operador de un teléfono y registra el cambio en el historial.
      */
     public static void actualizarOperador() {
         TerminalUtils.clearScreen();
-        
+
         // Seleccionar teléfono a actualizar
-        List<Telefono> telefonos = fetchData(restClient::getTelefonos);
-        Telefono telefono = selectItemFromList(telefonos, AppDocumentada::displayTelefonosList, AppDocumentada::getTelefonoInput);
+        List<Telefono> telefonos = AplicacionUtils.fetchData(restClient::getTelefonos);
+        Telefono telefono = AplicacionUtils.selectItemFromList(telefonos, AppDocumentada::displayTelefonosList,
+                AppDocumentada::getTelefonoInput);
 
         // Seleccionar nuevo operador
         TerminalUtils.clearScreen();
@@ -126,13 +86,13 @@ public class AppDocumentada {
         telefono.setOperador(operador);
 
         // Actualizar teléfono
-        if (processUpdate(() -> restClient.patchTelefonoTitular(telefono), 
+        if (AplicacionUtils.processUpdate(() -> restClient.patchTelefonoTitular(telefono),
                 "Teléfono actualizado correctamente",
                 "Error al actualizar el teléfono")) {
-            
+
             // Registrar cambio en historial
             TerminalUtils.clearScreen();
-            String motivo = getInputWithValidation(
+            String motivo = AplicacionUtils.getInputWithValidation(
                     "Introduzca el motivo del cambio de operador: ",
                     input -> !input.trim().isEmpty(),
                     "El motivo no puede estar vacío");
@@ -144,7 +104,7 @@ public class AppDocumentada {
             historial.setMotivos(motivo);
 
             TerminalUtils.clearScreen();
-            processUpdate(() -> restClient.postHistorial(historial), 
+            AplicacionUtils.processUpdate(() -> restClient.postHistorial(historial),
                     "Historial añadido correctamente",
                     "Error al añadir el historial");
         }
@@ -162,8 +122,8 @@ public class AppDocumentada {
         telefono.setOperador(operador);
 
         // Obtener número de teléfono (validando que sea único y de 9 dígitos)
-        List<Telefono> telefonos = fetchData(restClient::getTelefonos);
-        int numTelefono = getIntInputWithValidation(
+        List<Telefono> telefonos = AplicacionUtils.fetchData(restClient::getTelefonos);
+        int numTelefono = AplicacionUtils.getIntInputWithValidation(
                 "Introduzca el número de teléfono: ",
                 num -> Integer.toString(num).length() == 9
                         && telefonos.stream().noneMatch(t -> t.getNumTelefono() == num),
@@ -175,7 +135,7 @@ public class AppDocumentada {
         telefono.setTitular(titular);
 
         // Guardar teléfono
-        processUpdate(() -> restClient.postTelefono(telefono), 
+        AplicacionUtils.processUpdate(() -> restClient.postTelefono(telefono),
                 "Teléfono añadido correctamente",
                 "Error al añadir el teléfono");
     }
@@ -187,8 +147,8 @@ public class AppDocumentada {
      */
     public static void visualizarTelefonos() {
         TerminalUtils.clearScreen();
-        List<Telefono> telefonos = fetchData(restClient::getTelefonos);
-        displayData(telefonos, AppDocumentada::displayTelefonosList);
+        List<Telefono> telefonos = AplicacionUtils.fetchData(restClient::getTelefonos);
+        AplicacionUtils.displayData(telefonos, AppDocumentada::displayTelefonosList);
     }
 
     /**
@@ -197,7 +157,7 @@ public class AppDocumentada {
     public static void visualizarTelefonosPorOperador() {
         TerminalUtils.clearScreen();
         int codOperador = getOperador().getCodOperador();
-        fetchAndDisplayData(
+        AplicacionUtils.fetchAndDisplayData(
                 () -> restClient.getTelefonosPorOperador(codOperador),
                 AppDocumentada::displayTelefonosList,
                 "No hay registros para mostrar");
@@ -214,12 +174,12 @@ public class AppDocumentada {
             return;
         }
 
-        String encodedTitular = encodeTitular(titular);
+        String encodedTitular = AplicacionUtils.encodeString(titular);
         if (encodedTitular == null) {
             return;
         }
 
-        fetchAndDisplayData(
+        AplicacionUtils.fetchAndDisplayData(
                 () -> restClient.getTelefonosTitular(encodedTitular),
                 AppDocumentada::displayTelefonosList,
                 "No hay registros para mostrar");
@@ -230,7 +190,7 @@ public class AppDocumentada {
      */
     public static void visualizarHistorialNumero() {
         TerminalUtils.clearScreen();
-        List<Telefono> telefonos = fetchData(restClient::getTelefonos);
+        List<Telefono> telefonos = AplicacionUtils.fetchData(restClient::getTelefonos);
 
         if (telefonos.isEmpty()) {
             System.out.println("No hay registros para mostrar");
@@ -241,173 +201,9 @@ public class AppDocumentada {
         int numTelefono = selectNumeroTelefono(telefonos);
 
         TerminalUtils.clearScreen();
-        fetchAndDisplayData(() -> restClient.getHistorialTelefono(numTelefono),
+        AplicacionUtils.fetchAndDisplayData(() -> restClient.getHistorialTelefono(numTelefono),
                 AppDocumentada::displayHistorialList,
                 "No hay registros para mostrar");
-    }
-
-    // ==================== UTILIDADES DE DATOS ====================
-
-    /**
-     * Obtiene datos de forma asíncrona utilizando el proveedor especificado.
-     * 
-     * @param <T> Tipo de datos a obtener
-     * @param dataProvider Proveedor de los datos
-     * @return Datos obtenidos
-     */
-    private static <T> T fetchData(Supplier<CompletableFuture<T>> dataProvider) {
-        return dataProvider.get().join();
-    }
-
-    /**
-     * Realiza una operación de actualización y maneja los mensajes de éxito/error.
-     * 
-     * @param updateOperation Operación de actualización a realizar
-     * @param successMessage Mensaje a mostrar en caso de éxito
-     * @param errorMessage Mensaje a mostrar en caso de error
-     * @return true si la operación fue exitosa, false en caso contrario
-     */
-    private static boolean processUpdate(Supplier<CompletableFuture<Boolean>> updateOperation,
-            String successMessage, String errorMessage) {
-        boolean result = updateOperation.get().join();
-        if (result) {
-            System.out.println(successMessage);
-            waitForEnter();
-            return true;
-        } else {
-            System.err.println(errorMessage);
-            return false;
-        }
-    }
-
-    /**
-     * Obtiene datos de forma asíncrona y los muestra utilizando el método especificado.
-     * 
-     * @param <T> Tipo de datos a obtener
-     * @param dataProvider Proveedor de los datos
-     * @param displayMethod Método para mostrar los datos
-     * @param emptyMessage Mensaje a mostrar si no hay datos
-     */
-    private static <T> void fetchAndDisplayData(Supplier<CompletableFuture<List<T>>> dataProvider,
-            Consumer<List<T>> displayMethod,
-            String emptyMessage) {
-        List<T> data = new ArrayList<>();
-        dataProvider.get().thenAccept(result -> {
-            if (result == null || result.isEmpty()) {
-                System.out.println(emptyMessage);
-            } else {
-                data.addAll(result);
-            }
-        }).join();
-
-        if (!data.isEmpty()) {
-            displayMethod.accept(data);
-        }
-    }
-
-    /**
-     * Muestra datos utilizando el método especificado.
-     * 
-     * @param <T> Tipo de datos a mostrar
-     * @param data Datos a mostrar
-     * @param displayMethod Método para mostrar los datos
-     */
-    private static <T> void displayData(List<T> data, Consumer<List<T>> displayMethod) {
-        if (data == null || data.isEmpty()) {
-            System.out.println("No hay registros para mostrar");
-        } else {
-            displayMethod.accept(data);
-        }
-    }
-
-    /**
-     * Codifica un titular para su uso en URLs.
-     * 
-     * @param titular Titular a codificar
-     * @return Titular codificado o null si hubo un error
-     */
-    private static String encodeTitular(String titular) {
-        if (titular.trim().contains(" ")) {
-            try {
-                return URLEncoder.encode(titular, "UTF-8");
-            } catch (UnsupportedEncodingException e) {
-                System.err.println("Error al codificar el titular");
-                return null;
-            }
-        }
-        return titular;
-    }
-
-    // ==================== UTILIDADES DE INTERFAZ DE USUARIO ====================
-
-    /**
-     * Espera a que el usuario presione Enter para continuar.
-     */
-    private static void waitForEnter() {
-        System.out.println("Presione Enter para continuar...");
-        System.console().readLine();
-    }
-
-    /**
-     * Obtiene una entrada de texto del usuario con validación.
-     * 
-     * @param prompt Mensaje a mostrar al usuario
-     * @param validator Validador para la entrada
-     * @param errorMessage Mensaje de error a mostrar si la entrada no es válida
-     * @return Entrada validada
-     */
-    private static String getInputWithValidation(String prompt, Predicate<String> validator, String errorMessage) {
-        String input;
-        do {
-            System.out.println(prompt);
-            input = System.console().readLine();
-            if (!validator.test(input)) {
-                System.err.println(errorMessage);
-            }
-        } while (!validator.test(input));
-        return input;
-    }
-
-    /**
-     * Obtiene una entrada numérica del usuario con validación.
-     * 
-     * @param prompt Mensaje a mostrar al usuario
-     * @param validator Validador para la entrada
-     * @param errorMessage Mensaje de error a mostrar si la entrada no es válida
-     * @return Entrada numérica validada
-     */
-    private static int getIntInputWithValidation(String prompt, Predicate<Integer> validator, String errorMessage) {
-        int input = 0;
-        boolean valid = false;
-        do {
-            System.out.println(prompt);
-            try {
-                input = Integer.parseInt(System.console().readLine());
-                if (validator.test(input)) {
-                    valid = true;
-                } else {
-                    System.err.println(errorMessage);
-                }
-            } catch (NumberFormatException e) {
-                System.err.println("Error: Debe introducir un número");
-            }
-        } while (!valid);
-        return input;
-    }
-
-    /**
-     * Selecciona un elemento de una lista utilizando los métodos especificados.
-     * 
-     * @param <T> Tipo de elementos en la lista
-     * @param items Lista de elementos
-     * @param displayMethod Método para mostrar los elementos
-     * @param selectionMethod Método para seleccionar un elemento
-     * @return Elemento seleccionado
-     */
-    private static <T> T selectItemFromList(List<T> items, Consumer<List<T>> displayMethod,
-            Supplier<T> selectionMethod) {
-        displayMethod.accept(items);
-        return selectionMethod.get();
     }
 
     // ==================== MÉTODOS DE VISUALIZACIÓN DE LISTAS ====================
@@ -499,8 +295,8 @@ public class AppDocumentada {
      * @return Teléfono seleccionado
      */
     private static Telefono getTelefonoByNumber() {
-        List<Telefono> telefonos = fetchData(restClient::getTelefonos);
-        int numTelefono = getIntInputWithValidation(
+        List<Telefono> telefonos = AplicacionUtils.fetchData(restClient::getTelefonos);
+        int numTelefono = AplicacionUtils.getIntInputWithValidation(
                 "Introduzca el número de teléfono: ",
                 num -> telefonos.stream().anyMatch(t -> t.getNumTelefono() == num),
                 "Error: Número de teléfono no válido");
@@ -513,8 +309,9 @@ public class AppDocumentada {
      * @return Operador seleccionado
      */
     private static Operador getOperador() {
-        List<Operador> operadores = fetchData(restClient::getOperadores);
-        return selectItemFromList(operadores, AppDocumentada::displayOperadoresList, () -> selectOperadorByCode(operadores));
+        List<Operador> operadores = AplicacionUtils.fetchData(restClient::getOperadores);
+        return AplicacionUtils.selectItemFromList(operadores, AppDocumentada::displayOperadoresList,
+                () -> selectOperadorByCode(operadores));
     }
 
     /**
@@ -524,7 +321,7 @@ public class AppDocumentada {
      * @return Operador seleccionado
      */
     private static Operador selectOperadorByCode(List<Operador> operadores) {
-        int codOperador = getIntInputWithValidation(
+        int codOperador = AplicacionUtils.getIntInputWithValidation(
                 "Seleccione un operador:(Introduzca codigo) ",
                 code -> operadores.stream().anyMatch(op -> op.getCodOperador() == code),
                 "Error: Código de operador no válido");
@@ -539,14 +336,14 @@ public class AppDocumentada {
      */
     private static String getTitular() {
         Set<String> titulares = new HashSet<>();
-        fetchData(restClient::getTitulares).forEach(titulares::add);
+        AplicacionUtils.fetchData(restClient::getTitulares).forEach(titulares::add);
 
         if (titulares.isEmpty()) {
             System.err.println("No hay registros para mostrar");
             return "";
         }
 
-        return selectItemFromList(
+        return AplicacionUtils.selectItemFromList(
                 new ArrayList<>(titulares),
                 AppDocumentada::displayTitularesList,
                 () -> selectTitularByNombre(titulares));
@@ -559,7 +356,7 @@ public class AppDocumentada {
      * @return Titular seleccionado
      */
     private static String selectTitularByNombre(Set<String> titulares) {
-        String titular = getInputWithValidation(
+        String titular = AplicacionUtils.getInputWithValidation(
                 "Introduzca el nombre del titular: ",
                 titulares::contains,
                 "Error: Titular no válido");
@@ -574,7 +371,7 @@ public class AppDocumentada {
      * @return Número de teléfono seleccionado
      */
     private static int selectNumeroTelefono(List<Telefono> telefonos) {
-        return getIntInputWithValidation(
+        return AplicacionUtils.getIntInputWithValidation(
                 "Seleccione un número de teléfono:(Introduzca número) ",
                 num -> telefonos.stream().anyMatch(t -> t.getNumTelefono() == num),
                 "Error: Número de teléfono no válido");
